@@ -1,0 +1,4 @@
+name=Anshul
+linkedin=anshul
+github=thevoxium
+twitter=Anshul627
