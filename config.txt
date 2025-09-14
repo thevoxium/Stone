@@ -1,5 +1,5 @@
 name=Anshul
-theme=dark
+theme=academic
 linkedin=anshul
 github=thevoxium
 twitter=Anshul627

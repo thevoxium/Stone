@@ -111,6 +111,7 @@ void generate_html(SiteConfig *sc) {
     fprintf(stderr, "could not create index.html\n");
     return;
   }
+
   fprintf(fp, "<!DOCTYPE html>\n");
   fprintf(fp, "<html lang=\"en\">\n");
   fprintf(fp, "<head>\n");
@@ -120,45 +121,46 @@ void generate_html(SiteConfig *sc) {
   fprintf(fp, "  <title>%s</title>\n", sc->name ? sc->name : "My Site");
   fprintf(fp, "  <link rel=\"stylesheet\" "
               "href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/"
-              "6.0.0/css/all.min.css\">\n");
+              "6.5.1/css/all.min.css\">\n");
   fprintf(fp, "  <link rel=\"stylesheet\" href=\"themes/%s.css\">\n",
-          sc->theme);
+          sc->theme ? sc->theme : "dark");
   fprintf(fp, "</head>\n");
-
   fprintf(fp, "<body>\n");
-  fprintf(fp, "  <div class=\"container\">\n");
-  fprintf(fp, "    <h1 class=\"greeting\">Hello, %s</h1>\n",
-          sc->name ? sc->name : "there");
-  fprintf(fp, "    <div class=\"social-links\">\n");
+  fprintf(fp, "  <main class=\"container\">\n");
+  fprintf(fp, "    <h1>Hey, I'm %s 👋</h1>\n",
+          sc->name ? sc->name : "Your Name");
 
-  for (int i = 0; i < sc->social_count; i++) {
-    const char *platform_class = "";
-    switch (sc->socials[i].type) {
-    case X:
-      platform_class = "fa-brands fa-x-twitter";
-      break;
-    case GITHUB:
-      platform_class = "fab fa-github";
-      break;
-    case LINKEDIN:
-      platform_class = "fab fa-linkedin";
-      break;
+  if (sc->social_count > 0) {
+    fprintf(fp, "    <ul class=\"socials-list\">\n");
+    for (int i = 0; i < sc->social_count; i++) {
+      const char *icon_class = "";
+      const char *base_url = "";
+      const char *social_name = "";
+      switch (sc->socials[i].type) {
+      case X:
+        icon_class = "fa-brands fa-twitter";
+        base_url = "https://x.com/";
+        social_name = "X";
+        break;
+      case GITHUB:
+        icon_class = "fa-brands fa-github";
+        base_url = "https://github.com/";
+        social_name = "GitHub";
+        break;
+      case LINKEDIN:
+        icon_class = "fa-brands fa-linkedin";
+        base_url = "https://linkedin.com/in/";
+        social_name = "LinkedIn";
+        break;
+      }
+      fprintf(fp,
+              "      <li><a href=\"%s%s\" title=\"%s\" target=\"_blank\" "
+              "rel=\"noopener noreferrer\"><i class=\"%s\"></i></a></li>\n",
+              base_url, sc->socials[i].username, social_name, icon_class);
     }
-
-    fprintf(fp,
-            "      <a href=\"https://%s/%s\" class=\"social-link\" "
-            "target=\"_blank\" rel=\"noopener\">\n"
-            "        <i class=\"%s\"></i>\n"
-            "        <span>%s</span>\n"
-            "      </a>\n",
-            (sc->socials[i].type == X)        ? "x.com"
-            : (sc->socials[i].type == GITHUB) ? "github.com"
-                                              : "linkedin.com/in",
-            sc->socials[i].username, platform_class, sc->socials[i].username);
+    fprintf(fp, "    </ul>\n");
   }
-
-  fprintf(fp, "    </div>\n");
-  fprintf(fp, "  </div>\n");
+  fprintf(fp, "  </main>\n");
   fprintf(fp, "</body>\n");
   fprintf(fp, "</html>\n");
   fclose(fp);
