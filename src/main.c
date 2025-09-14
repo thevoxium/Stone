@@ -121,34 +121,44 @@ void generate_html(SiteConfig *sc) {
   fprintf(fp, "  <link rel=\"stylesheet\" "
               "href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/"
               "6.0.0/css/all.min.css\">\n");
-  fprintf(fp, "</head>\n");
-  fprintf(fp, "  <link rel=\"stylesheet\" href = \"themes/%s.css\" \n>",
+  fprintf(fp, "  <link rel=\"stylesheet\" href=\"themes/%s.css\">\n",
           sc->theme);
+  fprintf(fp, "</head>\n");
 
   fprintf(fp, "<body>\n");
-  fprintf(fp, "Hello %s,\n", sc->name);
+  fprintf(fp, "  <div class=\"container\">\n");
+  fprintf(fp, "    <h1 class=\"greeting\">Hello, %s</h1>\n",
+          sc->name ? sc->name : "there");
+  fprintf(fp, "    <div class=\"social-links\">\n");
+
   for (int i = 0; i < sc->social_count; i++) {
+    const char *platform_class = "";
     switch (sc->socials[i].type) {
     case X:
-      fprintf(fp,
-              "  <p><a href=\"https://x.com/%s\"><i class=\"fa-brands "
-              "fa-twitter\"></i> @%s</a></p>\n",
-              sc->socials[i].username, sc->socials[i].username);
+      platform_class = "fa-brands fa-x-twitter";
       break;
     case GITHUB:
-      fprintf(fp,
-              "  <p><a href=\"https://github.com/%s\"><i class=\"fab "
-              "fa-github\"></i> %s</a></p>\n",
-              sc->socials[i].username, sc->socials[i].username);
+      platform_class = "fab fa-github";
       break;
     case LINKEDIN:
-      fprintf(fp,
-              "  <p><a href=\"https://linkedin.com/in/%s\"><i class=\"fab "
-              "fa-linkedin\"></i> %s</a></p>\n",
-              sc->socials[i].username, sc->socials[i].username);
+      platform_class = "fab fa-linkedin";
       break;
     }
+
+    fprintf(fp,
+            "      <a href=\"https://%s/%s\" class=\"social-link\" "
+            "target=\"_blank\" rel=\"noopener\">\n"
+            "        <i class=\"%s\"></i>\n"
+            "        <span>%s</span>\n"
+            "      </a>\n",
+            (sc->socials[i].type == X)        ? "x.com"
+            : (sc->socials[i].type == GITHUB) ? "github.com"
+                                              : "linkedin.com/in",
+            sc->socials[i].username, platform_class, sc->socials[i].username);
   }
+
+  fprintf(fp, "    </div>\n");
+  fprintf(fp, "  </div>\n");
   fprintf(fp, "</body>\n");
   fprintf(fp, "</html>\n");
   fclose(fp);
