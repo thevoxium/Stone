@@ -1,22 +1,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #define __max_socials 4
 #define __max_name_len 24
+
 typedef enum SocialType {
   X,
   GITHUB,
   LINKEDIN,
 } SocialType;
+
 typedef struct Socials {
   SocialType type;
   char *username;
 } Socials;
+
 typedef struct SiteConfig {
   char *name;
+  char *theme;
   Socials socials[__max_socials];
   int social_count;
 } SiteConfig;
+
 SiteConfig *init_SiteConfig() {
   SiteConfig *sc = malloc(sizeof(SiteConfig));
   if (sc == NULL) {
@@ -27,23 +33,33 @@ SiteConfig *init_SiteConfig() {
     free(sc);
     return NULL;
   }
+  sc->theme = malloc(__max_name_len * sizeof(char));
+  if (sc->theme == NULL) {
+    free(sc->name);
+    free(sc);
+    return NULL;
+  }
   sc->social_count = 0;
   for (int i = 0; i < __max_socials; i++) {
     sc->socials[i].username = NULL;
   }
   return sc;
 }
+
 void free_SiteConfig(SiteConfig *sc) {
   if (sc == NULL)
     return;
   if (sc->name != NULL)
     free(sc->name);
+  if (sc->theme != NULL)
+    free(sc->theme);
   for (int i = 0; i < sc->social_count; i++) {
     if (sc->socials[i].username != NULL)
       free(sc->socials[i].username);
   }
   free(sc);
 }
+
 void add_social(SiteConfig *sc, SocialType type, const char *username_start) {
   if (sc->social_count < __max_socials) {
     sc->socials[sc->social_count].type = type;
@@ -57,6 +73,7 @@ void add_social(SiteConfig *sc, SocialType type, const char *username_start) {
     }
   }
 }
+
 void parse_config(SiteConfig *sc) {
   FILE *fp = fopen("config.txt", "r");
   if (fp == NULL) {
@@ -79,10 +96,15 @@ void parse_config(SiteConfig *sc) {
       strncpy(sc->name, line + 5, __max_name_len - 1);
       sc->name[__max_name_len - 1] = '\0';
       sc->name[strcspn(sc->name, "\n")] = '\0';
+    } else if (strncmp(line, "theme=", 6) == 0) {
+      strncpy(sc->theme, line + 6, __max_name_len - 1);
+      sc->theme[__max_name_len - 1] = '\0';
+      sc->theme[strcspn(sc->theme, "\n")] = '\0';
     }
   }
   fclose(fp);
 }
+
 void generate_html(SiteConfig *sc) {
   FILE *fp = fopen("index.html", "w");
   if (fp == NULL) {
@@ -100,8 +122,11 @@ void generate_html(SiteConfig *sc) {
               "href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/"
               "6.0.0/css/all.min.css\">\n");
   fprintf(fp, "</head>\n");
+  fprintf(fp, "  <link rel=\"stylesheet\" href = \"themes/%s.css\" \n>",
+          sc->theme);
+
   fprintf(fp, "<body>\n");
-  fprintf(fp, "Hello %s\n,", sc->name);
+  fprintf(fp, "Hello %s,\n", sc->name);
   for (int i = 0; i < sc->social_count; i++) {
     switch (sc->socials[i].type) {
     case X:
@@ -128,6 +153,7 @@ void generate_html(SiteConfig *sc) {
   fprintf(fp, "</html>\n");
   fclose(fp);
 }
+
 int main() {
   SiteConfig *sc = init_SiteConfig();
   if (sc == NULL) {
@@ -135,6 +161,7 @@ int main() {
     return 1;
   }
   parse_config(sc);
+
   generate_html(sc);
   free_SiteConfig(sc);
   return 0;

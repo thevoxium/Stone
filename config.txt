@@ -1,4 +1,5 @@
 name=Anshul
+theme=dark
 linkedin=anshul
 github=thevoxium
 twitter=Anshul627
