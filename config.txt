@@ -1,4 +1,6 @@
 name=Anshul
+title=Hello World!
+subtitle=I am anshul
 theme=academic
 linkedin=anshul
 github=thevoxium

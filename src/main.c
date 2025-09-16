@@ -19,6 +19,8 @@ typedef struct Socials {
 typedef struct SiteConfig {
   char *name;
   char *theme;
+  char *title;
+  char *subtitle;
   Socials socials[__max_socials];
   int social_count;
 } SiteConfig;
@@ -33,8 +35,24 @@ SiteConfig *init_SiteConfig() {
     free(sc);
     return NULL;
   }
+  sc->title = malloc(__max_name_len * sizeof(char));
+  if (sc->title == NULL) {
+    free(sc->name);
+    free(sc);
+    return NULL;
+  }
+
+  sc->subtitle = malloc(__max_name_len * sizeof(char));
+  if (sc->subtitle == NULL) {
+    free(sc->name);
+    free(sc->title);
+    free(sc);
+    return NULL;
+  }
   sc->theme = malloc(__max_name_len * sizeof(char));
   if (sc->theme == NULL) {
+    free(sc->subtitle);
+    free(sc->title);
     free(sc->name);
     free(sc);
     return NULL;
@@ -51,6 +69,10 @@ void free_SiteConfig(SiteConfig *sc) {
     return;
   if (sc->name != NULL)
     free(sc->name);
+  if (sc->title != NULL)
+    free(sc->title);
+  if (sc->subtitle != NULL)
+    free(sc->subtitle);
   if (sc->theme != NULL)
     free(sc->theme);
   for (int i = 0; i < sc->social_count; i++) {
@@ -96,6 +118,14 @@ void parse_config(SiteConfig *sc) {
       strncpy(sc->name, line + 5, __max_name_len - 1);
       sc->name[__max_name_len - 1] = '\0';
       sc->name[strcspn(sc->name, "\n")] = '\0';
+    } else if (strncmp(line, "title=", 6) == 0) {
+      strncpy(sc->title, line + 6, __max_name_len - 1);
+      sc->title[__max_name_len - 1] = '\0';
+      sc->title[strcspn(sc->title, "\n")] = '\0';
+    } else if (strncmp(line, "subtitle=", 9) == 0) {
+      strncpy(sc->subtitle, line + 9, __max_name_len - 1);
+      sc->subtitle[__max_name_len - 1] = '\0';
+      sc->subtitle[strcspn(sc->subtitle, "\n")] = '\0';
     } else if (strncmp(line, "theme=", 6) == 0) {
       strncpy(sc->theme, line + 6, __max_name_len - 1);
       sc->theme[__max_name_len - 1] = '\0';
@@ -127,8 +157,9 @@ void generate_html(SiteConfig *sc) {
   fprintf(fp, "</head>\n");
   fprintf(fp, "<body>\n");
   fprintf(fp, "  <main class=\"container\">\n");
-  fprintf(fp, "    <h1>Hey, I'm %s 👋</h1>\n",
-          sc->name ? sc->name : "Your Name");
+  fprintf(fp, "    <h1>%s</h1>\n", sc->title ? sc->title : "title");
+
+  fprintf(fp, "    <h1>%s</h1>\n", sc->subtitle ? sc->subtitle : "subtitle");
 
   if (sc->social_count > 0) {
     fprintf(fp, "    <ul class=\"socials-list\">\n");
